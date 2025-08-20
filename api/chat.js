@@ -1,4 +1,4 @@
-// api/chat.js — polished v4 (no search, tabs full width, labels without numbers)
+// api/chat.js — v5: no 'Kies een vraag' bubble on tab switch
 function buildData() {
   const faqs = {
     1: { label: "Wat is VANA Chat?", cat: "Algemeen",  a: "VANA Chat is een AI-gestuurde chatbot die 24/7 klantvragen beantwoordt via je website of WhatsApp. Getraind op jouw FAQ’s en info." },
@@ -47,13 +47,13 @@ export default function handler(req, res) {
     ], { categories: cats, category: "Alle" });
   }
 
-  // Tabs (category switch)
+  // Tabs (category switch) — return NO text to avoid extra bubbles
   if (text.startsWith("tab:")) {
     const category = raw.split(":")[1] || "Alle";
-    return reply("Kies een vraag:", filterButtons(faqs, { category }), { categories: cats, category });
+    return reply("", filterButtons(faqs, { category }), { categories: cats, category });
   }
 
-  // FAQ menu
+  // FAQ menu (only one time we send a small prompt)
   if (text === "faq" || text === "menu" || text === "terug") {
     return reply("Kies een vraag:", filterButtons(faqs, { category: "Alle" }), { categories: cats, category: "Alle" });
   }

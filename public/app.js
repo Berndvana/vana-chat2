@@ -11,6 +11,7 @@ let categories = ["Alle","Algemeen","Prijzen","Integraties","Veiligheid"];
 let currentCategory = "Alle";
 
 function add(text, who='bot'){
+  if (!text) return; // don't add empty
   const row = document.createElement('div'); row.className = 'row ' + who;
   const bubble = document.createElement('div'); bubble.className = 'bubble'; bubble.textContent = text;
   row.appendChild(bubble);
@@ -26,7 +27,7 @@ function renderTabs(){
     t.textContent = cat;
     t.onclick = async () => {
       currentCategory = cat;
-      await askRaw('tab:' + cat, false);
+      await askRaw('tab:' + cat, false, true); // third arg marks it as tab switch
     };
     tabsEl.appendChild(t);
   });
@@ -63,15 +64,15 @@ function renderButtons(){
   }
 }
 
-async function askRaw(value, showUser=false){
+async function askRaw(value, showUser=false, isTab=false){
   try{
     const r = await fetch('/api/chat', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ value, text: value })
     });
     const data = await r.json();
-    if (showUser) add(value, 'user');
-    if (data.say) add(data.say, 'bot');
+    // Skip adding response text for tab switches (server also returns empty say)
+    if (!isTab && data.say) add(data.say, 'bot');
     if (Array.isArray(data.buttons)) {
       buttons = data.buttons; page = 0; renderButtons();
     }
