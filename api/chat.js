@@ -1,34 +1,30 @@
-// api/chat.js — polished v3 with categories & search
+// api/chat.js — polished v4 (no search, tabs full width, labels without numbers)
 function buildData() {
   const faqs = {
-    1: { label: "1. Wat is VANA Chat?", cat: "Algemeen",  a: "VANA Chat is een AI-gestuurde chatbot die 24/7 klantvragen beantwoordt via je website of WhatsApp. Getraind op jouw FAQ’s en info." },
-    2: { label: "2. Voor wie geschikt?", cat: "Algemeen",  a: "Geschikt voor mkb: restaurants, praktijken, salons, webshops, advies en andere dienstverleners met veel herhaalvragen." },
-    3: { label: "3. Prijzen", cat: "Prijzen",  a: "Starter: €500 set‑up + €100/maand onderhoud. Inclusief training, integratie en maandelijkse monitoring. Uitbreidingen mogelijk." },
-    4: { label: "4. Hoe snel live?", cat: "Algemeen",  a: "Doorgaans binnen ~1 week live na intake → bouw & branding → integratie → test → livegang." },
-    5: { label: "5. Set‑up", cat: "Integraties",  a: "Set‑up: we verzamelen FAQ’s, openingstijden, diensten en prijzen; bouwen de bot; stemmen tone‑of‑voice af; en integreren technisch." },
-    6: { label: "6. Onderhoud", cat: "Prijzen",  a: "Onderhoud: prestatiecheck, updates (tijden/prijzen), en kleine uitbreidingen." },
-    7: { label: "7. Reserveringen/afspraken?", cat: "Integraties",  a: "Ja, via doorverwijzing naar je boekingssysteem of automatisch via Zapier/Make in je agenda." },
-    8: { label: "8. WhatsApp/Messenger?", cat: "Integraties",  a: "Ja, naast je website koppelen we met WhatsApp Business en Facebook Messenger." },
-    9: { label: "9. Meertalig?", cat: "Algemeen",  a: "Standaard NL; Engels/meertalig is mogelijk voor internationale klanten." },
-    10:{ label: "10. Veiligheid (AVG)", cat: "Veiligheid",  a: "We werken AVG/GDPR‑conform. Data wordt niet gebruikt om externe AI‑modellen te trainen." },
-    11:{ label: "11. Niet begrepen?", cat: "Algemeen",  a: "Als de bot het niet weet, e‑mail/CRM melding voor opvolging of doorverwijzing naar formulier/telefoon." },
-    12:{ label: "12. Capaciteit", cat: "Algemeen",  a: "Schaalt van 10 tot 10.000+ gesprekken per maand; verwerking parallel." },
-    13:{ label: "13. Uitbreiden", cat: "Algemeen",  a: "Zeker. Voeg later flows, integraties of kanalen toe (WhatsApp, Messenger, SMS)." },
-    14:{ label: "14. Samenwerking", cat: "Algemeen",  a: "Samenwerking: Intake → Bouw & branding → Integratie → Test & live (±1 week). Daarna maandelijkse updates & monitoring." }
+    1: { label: "Wat is VANA Chat?", cat: "Algemeen",  a: "VANA Chat is een AI-gestuurde chatbot die 24/7 klantvragen beantwoordt via je website of WhatsApp. Getraind op jouw FAQ’s en info." },
+    2: { label: "Voor wie geschikt?", cat: "Algemeen",  a: "Geschikt voor mkb: restaurants, praktijken, salons, webshops, advies en andere dienstverleners met veel herhaalvragen." },
+    3: { label: "Prijzen", cat: "Prijzen",  a: "Starter: €500 set‑up + €100/maand onderhoud. Inclusief training, integratie en maandelijkse monitoring. Uitbreidingen mogelijk." },
+    4: { label: "Hoe snel live?", cat: "Algemeen",  a: "Doorgaans binnen ~1 week live na intake → bouw & branding → integratie → test → livegang." },
+    5: { label: "Set‑up", cat: "Integraties",  a: "Set‑up: we verzamelen FAQ’s, openingstijden, diensten en prijzen; bouwen de bot; stemmen tone‑of‑voice af; en integreren technisch." },
+    6: { label: "Onderhoud", cat: "Prijzen",  a: "Onderhoud: prestatiecheck, updates (tijden/prijzen), en kleine uitbreidingen." },
+    7: { label: "Reserveringen/afspraken?", cat: "Integraties",  a: "Ja, via doorverwijzing naar je boekingssysteem of automatisch via Zapier/Make in je agenda." },
+    8: { label: "WhatsApp/Messenger?", cat: "Integraties",  a: "Ja, naast je website koppelen we met WhatsApp Business en Facebook Messenger." },
+    9: { label: "Meertalig?", cat: "Algemeen",  a: "Standaard NL; Engels/meertalig is mogelijk voor internationale klanten." },
+    10:{ label: "Veiligheid (AVG)", cat: "Veiligheid",  a: "We werken AVG/GDPR‑conform. Data wordt niet gebruikt om externe AI‑modellen te trainen." },
+    11:{ label: "Wat als de bot het niet weet?", cat: "Algemeen",  a: "Als de bot het niet weet, e‑mail/CRM melding voor opvolging of doorverwijzing naar formulier/telefoon." },
+    12:{ label: "Capaciteit", cat: "Algemeen",  a: "Schaalt van 10 tot 10.000+ gesprekken per maand; verwerking parallel." },
+    13:{ label: "Uitbreiden", cat: "Algemeen",  a: "Zeker. Voeg later flows, integraties of kanalen toe (WhatsApp, Messenger, SMS)." },
+    14:{ label: "Samenwerking", cat: "Algemeen",  a: "Samenwerking: Intake → Bouw & branding → Integratie → Test & live (±1 week). Daarna maandelijkse updates & monitoring." }
   };
   const cats = ["Alle", "Algemeen", "Prijzen", "Integraties", "Veiligheid"];
   return { faqs, cats };
 }
 
-function filterButtons(faqs, { category="Alle", q="" } = {}){
+function filterButtons(faqs, { category="Alle" } = {}){
   const list = Object.entries(faqs).map(([id, obj]) => ({ id: Number(id), ...obj }));
   let out = list;
   if (category && category !== "Alle") {
     out = out.filter(x => x.cat === category);
-  }
-  if (q) {
-    const t = q.toLowerCase();
-    out = out.filter(x => x.label.toLowerCase().includes(t) || x.a.toLowerCase().includes(t));
   }
   return out.map(x => ({ label: x.label, value: "faq."+x.id }));
 }
@@ -57,12 +53,6 @@ export default function handler(req, res) {
     return reply("Kies een vraag:", filterButtons(faqs, { category }), { categories: cats, category });
   }
 
-  // Search
-  if (text.startsWith("search:")) {
-    const q = raw.slice(7).trim();
-    return reply(q ? `Zoekresultaten voor “${q}”:` : "Kies een vraag:", filterButtons(faqs, { q }), { categories: cats, category: "Alle", q });
-  }
-
   // FAQ menu
   if (text === "faq" || text === "menu" || text === "terug") {
     return reply("Kies een vraag:", filterButtons(faqs, { category: "Alle" }), { categories: cats, category: "Alle" });
@@ -76,7 +66,7 @@ export default function handler(req, res) {
   }
 
   // Handle specific FAQ
-  const m = text.match(/^faq\.(\d{1,2})$/) || text.match(/^(\d{1,2})$/);
+  const m = text.match(/^faq\.(\d{1,2})$/);
   if (m) {
     const id = parseInt(m[1], 10);
     const item = faqs[id];

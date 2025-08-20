@@ -3,7 +3,6 @@ const input = document.getElementById('input');
 const send = document.getElementById('send');
 const quick = document.getElementById('quick');
 const tabsEl = document.getElementById('tabs');
-const searchEl = document.getElementById('search');
 
 let buttons = [];
 let page = 0;
@@ -27,7 +26,6 @@ function renderTabs(){
     t.textContent = cat;
     t.onclick = async () => {
       currentCategory = cat;
-      // Do not show user message for tab switch
       await askRaw('tab:' + cat, false);
     };
     tabsEl.appendChild(t);
@@ -44,8 +42,7 @@ function renderButtons(){
     btn.className = 'chip';
     btn.textContent = b.label;
     btn.onclick = () => {
-      // Show the question label (without numeric prefix) in chat
-      add(b.label.replace(/^\d+\.\s*/, ''), 'user');
+      add(b.label, 'user');
       askRaw(b.value || b.label, false);
     };
     quick.appendChild(btn);
@@ -99,19 +96,9 @@ function sendInput(){
 send.onclick = sendInput;
 input.addEventListener('keydown', e => { if (e.key === 'Enter') sendInput(); });
 
-// search interaction (debounced)
-let searchTimer = null;
-searchEl.addEventListener('input', () => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(()=> {
-    const q = searchEl.value.trim();
-    askRaw('search:' + q, false);
-  }, 250);
-});
-
 // Seed: start
 (async () => {
-  const r = await fetch('/api/chat'); // GET → backend geeft start + categories
+  const r = await fetch('/api/chat');
   const d = await r.json();
   if (d.say) add(d.say, 'bot');
   if (Array.isArray(d.categories)) { categories = d.categories; currentCategory = d.category || "Alle"; renderTabs(); }
