@@ -11,10 +11,9 @@ body{margin:0;background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-ap
 .bubble{max-width:80%;padding:12px 14px;border-radius:16px;line-height:1.45;box-shadow:0 1px 0 rgba(2,8,23,.06)}
 .bot .bubble{background:#f3f6fb;border-top-left-radius:6px}
 .user{justify-content:flex-end}.user .bubble{background:#e7f0ff;border-top-right-radius:6px}
-.quick{display:flex;gap:8px;flex-wrap:wrap;padding:8px 12px}
+.quick{display:flex;gap:8px;flex-wrap:wrap;padding:8px 12px;min-height:56px}
 .chip{padding:8px 12px;border-radius:999px;border:1px solid #e7eaf0;background:#fff;cursor:pointer;font-size:13px}
 .chip:hover{border-color:var(--blue)}
 .composer{display:flex;gap:8px;padding:12px;border-top:1px solid #e7eaf0;background:#fff}
 .composer input{flex:1;border:1px solid #e7eaf0;border-radius:12px;padding:12px 14px;outline:none}
 .send{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px 14px;font-weight:700;cursor:pointer}
-.meta{font-size:11px;color:#8a97ad;margin-top:4px}

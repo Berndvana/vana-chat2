@@ -1,67 +1,86 @@
-// api/chat.js — Flow-based backend for Vercel
-import fs from "fs";
-import path from "path";
-
-const baseDir = process.cwd();
-const flows = JSON.parse(fs.readFileSync(path.join(baseDir, "flows/main.flow.json"), "utf8"));
-const intents = JSON.parse(fs.readFileSync(path.join(baseDir, "nlu/intents.json"), "utf8"));
-
-const nodes = new Map(flows.nodes.map(n => [n.id, n]));
-
-function detectIntent(text="") {
-  const t = (text || "").toLowerCase();
-  for (const [name, list] of Object.entries(intents)) {
-    if (list.some(p => new RegExp(p, "i").test(t))) return name;
-  }
-  return null;
-}
-
-function nextNodeFor(text="", currentId) {
-  const node = nodes.get(currentId) || nodes.get(flows.start) || nodes.get("start") || [...nodes.values()][0];
-  const intent = detectIntent(text);
-
-  // Global transitions first
-  const global = [
-    { if: { intent: "demo" }, to: "faq.demo" },
-    { if: { intent: "faq" }, to: "faq.menu" },
-    { if: { match: "menu|terug" }, to: "faq.menu" }
-  ];
-  for (const tr of global) {
-    if (tr.if?.intent && tr.if.intent === intent) return tr.to;
-    if (tr.if?.match && new RegExp(tr.if.match, "i").test(text)) return tr.to;
-  }
-
-  // Node-specific transitions
-  for (const tr of (node.transitions || [])) {
-    if (tr.if?.intent && tr.if.intent === intent) return tr.to;
-    if (tr.if?.match && new RegExp(tr.if.match, "i").test(text)) return tr.to;
-  }
-
-  // Fallback
-  return node.fallback || flows.fallback || "fallback";
-}
-
+// api/chat.js — stateless, button-friendly replies for Vercel
 export default function handler(req, res) {
-  try {
-    const method = (req.method || "GET").toUpperCase();
-    const body = method === "POST" ? (req.body || {}) : (req.query || {});
-    const text = body.text || body.message || "";
-    const nodeId = body.nodeId || flows.start || "start";
+  const method = (req.method || 'GET').toUpperCase();
+  const payload = method === 'POST' ? (req.body || {}) : (req.query || {});
+  const text = ((payload.value || payload.text || '') + '').trim().toLowerCase();
 
-    const toId = nextNodeFor(text, nodeId);
-    const to = nodes.get(toId) || nodes.get("fallback");
+  const faqs = {
+    1: "VANA Chat is een AI-gestuurde chatbot die 24/7 klantvragen beantwoordt via je website of WhatsApp. Getraind op jouw FAQ’s en info.",
+    2: "Geschikt voor mkb: restaurants, praktijken, salons, webshops, advies en andere dienstverleners met veel herhaalvragen.",
+    3: "Starter: €500 set‑up + €100/maand onderhoud. Inclusief training, integratie en maandelijkse monitoring. Uitbreidingen mogelijk.",
+    4: "Doorgaans binnen ~1 week live na intake → bouw & branding → integratie → test → livegang.",
+    5: "Set‑up: we verzamelen FAQ’s, openingstijden, diensten en prijzen; bouwen de bot; stemmen tone‑of‑voice af; en integreren technisch.",
+    6: "Onderhoud: prestatiecheck, updates (tijden/prijzen), en kleine uitbreidingen.",
+    7: "Ja, via doorverwijzing naar je boekingssysteem of automatisch via Zapier/Make in je agenda.",
+    8: "Ja, naast je website koppelen we met WhatsApp Business en Facebook Messenger.",
+    9: "Standaard NL; Engels/meertalig is mogelijk voor internationale klanten.",
+    10:"We werken AVG/GDPR‑conform. Data wordt niet gebruikt om externe AI‑modellen te trainen.",
+    11:"Als de bot het niet weet, e‑mail/CRM melding voor opvolging of doorverwijzing naar formulier/telefoon.",
+    12:"Schaalt van 10 tot 10.000+ gesprekken per maand; verwerking parallel.",
+    13:"Zeker. Voeg later flows, integraties of kanalen toe (WhatsApp, Messenger, SMS).",
+    14:"Samenwerking: Intake → Bouw & branding → Integratie → Test & live (±1 week). Daarna maandelijkse updates & monitoring."
+  };
 
-    res.status(200).json({
-      nodeId: to.id,
-      say: to.say || "…",
-      buttons: to.buttons || []
-    });
-  } catch (e) {
-    console.error("API error", e);
-    res.status(200).json({
-      nodeId: "fallback",
-      say: "⚠️ Er ging iets mis. Typ 'FAQ' of kies een optie.",
-      buttons: ["FAQ","Start"]
-    });
+  const faqButtons = Array.from({length:14}, (_,i)=>{
+    const n = i+1;
+    const labels = {
+      1:"1. Wat is VANA Chat?",
+      2:"2. Voor wie geschikt?",
+      3:"3. Prijzen",
+      4:"4. Hoe snel live?",
+      5:"5. Set‑up",
+      6:"6. Onderhoud",
+      7:"7. Reserveringen/afspraken?",
+      8:"8. WhatsApp/Messenger?",
+      9:"9. Meertalig?",
+      10:"10. Veiligheid (AVG)",
+      11:"11. Niet begrepen?",
+      12:"12. Capaciteit",
+      13:"13. Uitbreiden",
+      14:"14. Samenwerking"
+    };
+    return { label: labels[n], value: "faq."+n };
+  });
+
+  const mainButtons = [
+    { label: "FAQ", value: "faq" },
+    { label: "Plan een demo", value: "demo" },
+    { label: "Contact", value: "contact" }
+  ];
+
+  // Helpers
+  const reply = (say, buttons=[], extra={}) => res.status(200).json({ say, buttons, ...extra });
+
+  // Routing
+  if (text === "demo" || /plan.*demo/.test(text)) {
+    return reply("Top! De demo‑planner opent in een nieuw tabblad. Heb je voorkeur voor datum/tijd?", mainButtons, { openDemo: true });
   }
+
+  if (text === "faq" || text === "menu" || text === "terug") {
+    return reply("Kies een vraag:", [...faqButtons, {label:"Plan demo", value:"demo"}]);
+  }
+
+  // Handle numeric or "faq.X"
+  const m = text.match(/^faq\.(\d{1,2})$/) || text.match(/^(\d{1,2})$/);
+  if (m) {
+    const id = parseInt(m[1], 10);
+    if (faqs[id]) {
+      return reply(faqs[id], [
+        { label: "← Terug naar FAQ", value: "faq" },
+        { label: "Plan een demo", value: "demo" }
+      ]);
+    }
+  }
+
+  // Category keywords
+  if (/prijs|kosten/.test(text)) return reply(faqs[3], [{label:"← FAQ", value:"faq"}, {label:"Plan demo", value:"demo"}]);
+  if (/integratie|whatsapp|messenger/.test(text)) return reply(faqs[8], [{label:"← FAQ", value:"faq"}]);
+  if (/veilig|avg|gdpr/.test(text)) return reply(faqs[10], [{label:"← FAQ", value:"faq"}]);
+
+  // Start / fallback
+  if (text === "" || text === "start") {
+    return reply("Welkom bij VANA Chat! Kies een optie of typ ‘FAQ’.", mainButtons);
+  }
+
+  return reply("Ik snap je vraag niet helemaal. Typ ‘FAQ’ of kies een optie.", mainButtons);
 }
