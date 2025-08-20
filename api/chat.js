@@ -1,4 +1,4 @@
-// api/chat.js — v6: sterkere intent-herkenning + categorie per tekst
+// api/chat.js — v7: typed category (bv. 'prijzen') shows menu prompt
 function buildData() {
   const faqs = {
     1: { label: "Wat is VANA Chat?", cat: "Algemeen",  a: "VANA Chat is een AI-gestuurde chatbot die 24/7 klantvragen beantwoordt via je website of WhatsApp. Getraind op jouw FAQ’s en info." },
@@ -58,13 +58,13 @@ export default function handler(req, res) {
     ], { categories: cats, category: "Alle" });
   }
 
-  // Direct category intent via typed word (bv. 'prijzen', 'integraties', 'veiligheid')
-  const cat = catByText(text);
-  if (cat) {
-    return reply("", filterButtons(faqs, { category: cat }), { categories: cats, category: cat });
+  // Typed category (bv. 'prijzen') → show prompt + buttons
+  const typedCat = catByText(text);
+  if (typedCat) {
+    return reply("Kies uit een van onderstaande mogelijkheden:", filterButtons(faqs, { category: typedCat }), { categories: cats, category: typedCat });
   }
 
-  // Tabs (explicit)
+  // Tabs (explicit) — still no bubble
   if (text.startsWith("tab:")) {
     const category = raw.split(":")[1] || "Alle";
     return reply("", filterButtons(faqs, { category }), { categories: cats, category });
@@ -95,7 +95,7 @@ export default function handler(req, res) {
     }
   }
 
-  // Keyword fallbacks to specific answers (broader)
+  // Keyword fallbacks to specific answers (kept for direct Q → A flows)
   if (/prijs|prijzen|kosten|tarief|tarieven|abonnement/.test(text))
     return reply(faqs[3].a, [{label:"← FAQ", value:"faq"}, {label:"Plan demo", value:"demo"}], {questionLabel: faqs[3].label});
 
