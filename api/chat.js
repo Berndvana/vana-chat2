@@ -1,4 +1,4 @@
-// api/chat.js — v5: no 'Kies een vraag' bubble on tab switch
+// api/chat.js — v6: sterkere intent-herkenning + categorie per tekst
 function buildData() {
   const faqs = {
     1: { label: "Wat is VANA Chat?", cat: "Algemeen",  a: "VANA Chat is een AI-gestuurde chatbot die 24/7 klantvragen beantwoordt via je website of WhatsApp. Getraind op jouw FAQ’s en info." },
@@ -23,10 +23,12 @@ function buildData() {
 function filterButtons(faqs, { category="Alle" } = {}){
   const list = Object.entries(faqs).map(([id, obj]) => ({ id: Number(id), ...obj }));
   let out = list;
-  if (category && category !== "Alle") {
-    out = out.filter(x => x.cat === category);
-  }
+  if (category && category !== "Alle") out = out.filter(x => x.cat === category);
   return out.map(x => ({ label: x.label, value: "faq."+x.id }));
+}
+
+function toNorm(s=""){
+  return s.normalize('NFKD').replace(/[\u0300-\u036f]/g, ''); // strip diacritics
 }
 
 export default function handler(req, res) {
@@ -34,11 +36,20 @@ export default function handler(req, res) {
   const method = (req.method || 'GET').toUpperCase();
   const payload = method === 'POST' ? (req.body || {}) : (req.query || {});
   const raw = (payload.value || payload.text || "").toString().trim();
-  const text = raw.toLowerCase();
+  const text = toNorm(raw.toLowerCase());
 
   const reply = (say, buttons=[], extra={}) => res.status(200).json({ say, buttons, ...extra });
 
-  // Default start
+  const catByText = (t) => {
+    if (/^alle$/.test(t)) return "Alle";
+    if (/^algemeen$/.test(t)) return "Algemeen";
+    if (/^prijs|prijzen|kosten|tarief|tarieven|abonnement/.test(t)) return "Prijzen";
+    if (/^integratie|integraties|koppelingen?|whatsapp|messenger|zapier|make/.test(t)) return "Integraties";
+    if (/^veilig|avg|gdpr|privacy/.test(t)) return "Veiligheid";
+    return null;
+  };
+
+  // Start
   if (raw === "" || text === "start") {
     return reply("Welkom bij VANA Chat! Kies een optie of typ ‘FAQ’.", [
       { label: "FAQ", value: "faq" },
@@ -47,13 +58,19 @@ export default function handler(req, res) {
     ], { categories: cats, category: "Alle" });
   }
 
-  // Tabs (category switch) — return NO text to avoid extra bubbles
+  // Direct category intent via typed word (bv. 'prijzen', 'integraties', 'veiligheid')
+  const cat = catByText(text);
+  if (cat) {
+    return reply("", filterButtons(faqs, { category: cat }), { categories: cats, category: cat });
+  }
+
+  // Tabs (explicit)
   if (text.startsWith("tab:")) {
     const category = raw.split(":")[1] || "Alle";
     return reply("", filterButtons(faqs, { category }), { categories: cats, category });
   }
 
-  // FAQ menu (only one time we send a small prompt)
+  // FAQ menu
   if (text === "faq" || text === "menu" || text === "terug") {
     return reply("Kies een vraag:", filterButtons(faqs, { category: "Alle" }), { categories: cats, category: "Alle" });
   }
@@ -65,8 +82,8 @@ export default function handler(req, res) {
     ], { openDemo: true });
   }
 
-  // Handle specific FAQ
-  const m = text.match(/^faq\.(\d{1,2})$/);
+  // Specific FAQ by id
+  const m = text.match(/^faq\.(\d{1,2})$/) || text.match(/^(\d{1,2})$/);
   if (m) {
     const id = parseInt(m[1], 10);
     const item = faqs[id];
@@ -78,10 +95,15 @@ export default function handler(req, res) {
     }
   }
 
-  // Keyword fallbacks
-  if (/prijs|kosten/.test(text)) return reply(faqs[3].a, [{label:"← FAQ", value:"faq"}, {label:"Plan demo", value:"demo"}], {questionLabel: faqs[3].label});
-  if (/integratie|whatsapp|messenger/.test(text)) return reply(faqs[8].a, [{label:"← FAQ", value:"faq"}], {questionLabel: faqs[8].label});
-  if (/veilig|avg|gdpr/.test(text)) return reply(faqs[10].a, [{label:"← FAQ", value:"faq"}], {questionLabel: faqs[10].label});
+  // Keyword fallbacks to specific answers (broader)
+  if (/prijs|prijzen|kosten|tarief|tarieven|abonnement/.test(text))
+    return reply(faqs[3].a, [{label:"← FAQ", value:"faq"}, {label:"Plan demo", value:"demo"}], {questionLabel: faqs[3].label});
+
+  if (/integratie|integraties|koppelingen?|whatsapp|messenger|zapier|make/.test(text))
+    return reply(faqs[8].a, [{label:"← FAQ", value:"faq"}], {questionLabel: faqs[8].label});
+
+  if (/veilig|avg|gdpr|privacy/.test(text))
+    return reply(faqs[10].a, [{label:"← FAQ", value:"faq"}], {questionLabel: faqs[10].label});
 
   // Fallback
   return reply("Ik snap je vraag niet helemaal. Typ ‘FAQ’ of kies een optie.", [
