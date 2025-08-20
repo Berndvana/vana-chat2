@@ -24,7 +24,12 @@ function renderButtons(){
     const btn = document.createElement('button');
     btn.className = 'chip';
     btn.textContent = b.label;
-    btn.onclick = () => ask(b.value || b.label);
+    btn.onclick = () => {
+      // Show the human-friendly label in chat
+      add(b.label.replace(/^\d+\.\s*/, ''), 'user');
+      // Send the technical value to backend
+      askRaw(b.value || b.label);
+    };
     quick.appendChild(btn);
   });
   if (page > 0) {
@@ -43,17 +48,17 @@ function renderButtons(){
   }
 }
 
-async function ask(val){
-  const text = typeof val === 'string' ? val : input.value.trim();
-  if (!text) return;
-  add(text, 'user');
-  input.value = '';
+async function askRaw(value){
   try{
     const r = await fetch('/api/chat', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ value: text, text })
+      body: JSON.stringify({ value, text: value })
     });
     const data = await r.json();
+    if (data.questionLabel) {
+      // If backend sends original question, ensure it's present once
+      // (We already showed label above on click, skip here)
+    }
     add(data.say || '…', 'bot');
     buttons = data.buttons || [];
     page = 0;
@@ -64,8 +69,16 @@ async function ask(val){
   }
 }
 
-send.onclick = () => ask();
-input.addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
+function sendInput(){
+  const t = input.value.trim();
+  if (!t) return;
+  add(t, 'user');
+  input.value = '';
+  askRaw(t);
+}
+
+send.onclick = sendInput;
+input.addEventListener('keydown', e => { if (e.key === 'Enter') sendInput(); });
 
 // Seed: start prompt
 (async () => {

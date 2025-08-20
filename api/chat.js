@@ -1,8 +1,9 @@
-// api/chat.js — stateless, button-friendly replies for Vercel
+// api/chat.js — same as previous polished version
 export default function handler(req, res) {
   const method = (req.method || 'GET').toUpperCase();
   const payload = method === 'POST' ? (req.body || {}) : (req.query || {});
-  const text = ((payload.value || payload.text || '') + '').trim().toLowerCase();
+  const textRaw = (payload.value || payload.text || '').toString();
+  const text = textRaw.trim().toLowerCase();
 
   const faqs = {
     1: "VANA Chat is een AI-gestuurde chatbot die 24/7 klantvragen beantwoordt via je website of WhatsApp. Getraind op jouw FAQ’s en info.",
@@ -21,9 +22,7 @@ export default function handler(req, res) {
     14:"Samenwerking: Intake → Bouw & branding → Integratie → Test & live (±1 week). Daarna maandelijkse updates & monitoring."
   };
 
-  const faqButtons = Array.from({length:14}, (_,i)=>{
-    const n = i+1;
-    const labels = {
+  const labels = {
       1:"1. Wat is VANA Chat?",
       2:"2. Voor wie geschikt?",
       3:"3. Prijzen",
@@ -38,7 +37,10 @@ export default function handler(req, res) {
       12:"12. Capaciteit",
       13:"13. Uitbreiden",
       14:"14. Samenwerking"
-    };
+  };
+
+  const faqButtons = Array.from({length:14}, (_,i)=>{
+    const n = i+1;
     return { label: labels[n], value: "faq."+n };
   });
 
@@ -48,10 +50,8 @@ export default function handler(req, res) {
     { label: "Contact", value: "contact" }
   ];
 
-  // Helpers
   const reply = (say, buttons=[], extra={}) => res.status(200).json({ say, buttons, ...extra });
 
-  // Routing
   if (text === "demo" || /plan.*demo/.test(text)) {
     return reply("Top! De demo‑planner opent in een nieuw tabblad. Heb je voorkeur voor datum/tijd?", mainButtons, { openDemo: true });
   }
@@ -60,7 +60,6 @@ export default function handler(req, res) {
     return reply("Kies een vraag:", [...faqButtons, {label:"Plan demo", value:"demo"}]);
   }
 
-  // Handle numeric or "faq.X"
   const m = text.match(/^faq\.(\d{1,2})$/) || text.match(/^(\d{1,2})$/);
   if (m) {
     const id = parseInt(m[1], 10);
@@ -68,16 +67,14 @@ export default function handler(req, res) {
       return reply(faqs[id], [
         { label: "← Terug naar FAQ", value: "faq" },
         { label: "Plan een demo", value: "demo" }
-      ]);
+      ], { questionLabel: labels[id] });
     }
   }
 
-  // Category keywords
-  if (/prijs|kosten/.test(text)) return reply(faqs[3], [{label:"← FAQ", value:"faq"}, {label:"Plan demo", value:"demo"}]);
-  if (/integratie|whatsapp|messenger/.test(text)) return reply(faqs[8], [{label:"← FAQ", value:"faq"}]);
-  if (/veilig|avg|gdpr/.test(text)) return reply(faqs[10], [{label:"← FAQ", value:"faq"}]);
+  if (/prijs|kosten/.test(text)) return reply(faqs[3], [{label:"← FAQ", value:"faq"}, {label:"Plan demo", value:"demo"}], { questionLabel: labels[3] });
+  if (/integratie|whatsapp|messenger/.test(text)) return reply(faqs[8], [{label:"← FAQ", value:"faq"}], { questionLabel: labels[8] });
+  if (/veilig|avg|gdpr/.test(text)) return reply(faqs[10], [{label:"← FAQ", value:"faq"}], { questionLabel: labels[10] });
 
-  // Start / fallback
   if (text === "" || text === "start") {
     return reply("Welkom bij VANA Chat! Kies een optie of typ ‘FAQ’.", mainButtons);
   }
