@@ -7,11 +7,11 @@ const tabsEl = document.getElementById('tabs');
 let buttons = [];
 let page = 0;
 const PAGE_SIZE = 6;
-let categories = ["Alle","Algemeen","Prijzen","Integraties","Veiligheid"];
+let categories = ["Alle","Algemeen","Integraties","Veiligheid","Pakketten & prijzen"];
 let currentCategory = "Alle";
 
 function add(text, who='bot'){
-  if (!text) return; // don't add empty
+  if (!text) return;
   const row = document.createElement('div'); row.className = 'row ' + who;
   const bubble = document.createElement('div'); bubble.className = 'bubble'; bubble.textContent = text;
   row.appendChild(bubble);
@@ -27,7 +27,7 @@ function renderTabs(){
     t.textContent = cat;
     t.onclick = async () => {
       currentCategory = cat;
-      await askRaw('tab:' + cat, false, true); // third arg marks it as tab switch
+      await askRaw('tab:' + cat, false, true);
     };
     tabsEl.appendChild(t);
   });
@@ -71,7 +71,6 @@ async function askRaw(value, showUser=false, isTab=false){
       body: JSON.stringify({ value, text: value })
     });
     const data = await r.json();
-    // Skip adding response text for tab switches (server also returns empty say)
     if (!isTab && data.say) add(data.say, 'bot');
     if (Array.isArray(data.buttons)) {
       buttons = data.buttons; page = 0; renderButtons();
@@ -97,7 +96,7 @@ function sendInput(){
 send.onclick = sendInput;
 input.addEventListener('keydown', e => { if (e.key === 'Enter') sendInput(); });
 
-// Seed: start
+// Seed start
 (async () => {
   const r = await fetch('/api/chat');
   const d = await r.json();
