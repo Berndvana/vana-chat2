@@ -1,36 +1,38 @@
-const messages = document.getElementById('chat-messages');
-const input = document.getElementById('user-input');
-const sendBtn = document.getElementById('send-btn');
+const messages = document.getElementById('messages');
+const input = document.getElementById('input');
+const send = document.getElementById('send');
+const quick = document.getElementById('quick');
 
-function addMessage(text, sender) {
-  const div = document.createElement('div');
-  div.className = 'message ' + sender;
-  div.innerText = text;
-  messages.appendChild(div);
+function add(text, who='bot'){
+  const row = document.createElement('div'); row.className = 'row ' + who;
+  const bubble = document.createElement('div'); bubble.className = 'bubble'; bubble.textContent = text;
+  row.appendChild(bubble);
+  messages.appendChild(row);
   messages.scrollTop = messages.scrollHeight;
 }
 
-sendBtn.addEventListener('click', sendMessage);
-input.addEventListener('keypress', e => {
-  if (e.key === 'Enter') sendMessage();
+async function ask(text){
+  add(text, 'user');
+  try{
+    const r = await fetch('/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text })
+    });
+    const data = await r.json();
+    add(data.reply || '…', 'bot');
+  }catch(e){
+    add('⚠️ Er ging iets mis met de verbinding.', 'bot');
+  }
+}
+
+send.onclick = () => { const t = input.value.trim(); if(t){ ask(t); input.value=''; } };
+input.addEventListener('keydown', e => { if(e.key==='Enter'){ send.click(); } });
+
+quick.addEventListener('click', (e)=>{
+  if(e.target.classList.contains('chip')){
+    ask(e.target.textContent);
+  }
 });
 
-function sendMessage() {
-  const text = input.value.trim();
-  if (!text) return;
-  addMessage(text, 'user');
-  input.value = '';
-
-  fetch('/api/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text })
-  })
-    .then(res => res.json())
-    .then(data => {
-      addMessage(data.reply, 'bot');
-    })
-    .catch(err => {
-      addMessage('⚠️ Er ging iets mis.', 'bot');
-    });
-}
+// greeting
+add('👋 Welkom bij VANA Chat! Vraag gerust naar prijzen, integraties of plan direct een demo.');
