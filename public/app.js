@@ -2,10 +2,14 @@ const messages = document.getElementById('messages');
 const input = document.getElementById('input');
 const send = document.getElementById('send');
 const quick = document.getElementById('quick');
+const tabsEl = document.getElementById('tabs');
+const searchEl = document.getElementById('search');
 
 let buttons = [];
 let page = 0;
 const PAGE_SIZE = 6;
+let categories = ["Alle","Algemeen","Prijzen","Integraties","Veiligheid"];
+let currentCategory = "Alle";
 
 function add(text, who='bot'){
   const row = document.createElement('div'); row.className = 'row ' + who;
@@ -13,6 +17,21 @@ function add(text, who='bot'){
   row.appendChild(bubble);
   messages.appendChild(row);
   messages.scrollTop = messages.scrollHeight;
+}
+
+function renderTabs(){
+  tabsEl.innerHTML = '';
+  (categories || []).forEach(cat => {
+    const t = document.createElement('button');
+    t.className = 'tab' + (cat === currentCategory ? ' active' : '');
+    t.textContent = cat;
+    t.onclick = async () => {
+      currentCategory = cat;
+      // Do not show user message for tab switch
+      await askRaw('tab:' + cat, false);
+    };
+    tabsEl.appendChild(t);
+  });
 }
 
 function renderButtons(){
@@ -25,10 +44,9 @@ function renderButtons(){
     btn.className = 'chip';
     btn.textContent = b.label;
     btn.onclick = () => {
-      // Show the human-friendly label in chat
+      // Show the question label (without numeric prefix) in chat
       add(b.label.replace(/^\d+\.\s*/, ''), 'user');
-      // Send the technical value to backend
-      askRaw(b.value || b.label);
+      askRaw(b.value || b.label, false);
     };
     quick.appendChild(btn);
   });
@@ -48,22 +66,23 @@ function renderButtons(){
   }
 }
 
-async function askRaw(value){
+async function askRaw(value, showUser=false){
   try{
     const r = await fetch('/api/chat', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ value, text: value })
     });
     const data = await r.json();
-    if (data.questionLabel) {
-      // If backend sends original question, ensure it's present once
-      // (We already showed label above on click, skip here)
+    if (showUser) add(value, 'user');
+    if (data.say) add(data.say, 'bot');
+    if (Array.isArray(data.buttons)) {
+      buttons = data.buttons; page = 0; renderButtons();
     }
-    add(data.say || '…', 'bot');
-    buttons = data.buttons || [];
-    page = 0;
-    renderButtons();
-    if (data.openDemo) setTimeout(()=>window.open('https://calendly.com/d/cv46-k7m-n2f','_blank'), 80);
+    if (Array.isArray(data.categories)) {
+      categories = data.categories; currentCategory = data.category || currentCategory;
+      renderTabs();
+    }
+    if (data.openDemo) setTimeout(()=>window.open('https://calendly.com/d/cv46-k7m-n2f','_blank'), 50);
   }catch(e){
     add('⚠️ Er ging iets mis met de verbinding.', 'bot');
   }
@@ -74,17 +93,27 @@ function sendInput(){
   if (!t) return;
   add(t, 'user');
   input.value = '';
-  askRaw(t);
+  askRaw(t, false);
 }
 
 send.onclick = sendInput;
 input.addEventListener('keydown', e => { if (e.key === 'Enter') sendInput(); });
 
-// Seed: start prompt
+// search interaction (debounced)
+let searchTimer = null;
+searchEl.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=> {
+    const q = searchEl.value.trim();
+    askRaw('search:' + q, false);
+  }, 250);
+});
+
+// Seed: start
 (async () => {
-  const r = await fetch('/api/chat'); // GET → backend geeft start
+  const r = await fetch('/api/chat'); // GET → backend geeft start + categories
   const d = await r.json();
-  add(d.say || 'Welkom bij VANA Chat!', 'bot');
-  buttons = d.buttons || [];
-  renderButtons();
+  if (d.say) add(d.say, 'bot');
+  if (Array.isArray(d.categories)) { categories = d.categories; currentCategory = d.category || "Alle"; renderTabs(); }
+  if (Array.isArray(d.buttons)) { buttons = d.buttons; page = 0; renderButtons(); }
 })();
