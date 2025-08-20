@@ -1,22 +1,27 @@
-// api/chat.js — v7: typed category (bv. 'prijzen') shows menu prompt
+// api/chat.js — v8: adds 'Pakketten' category (Starter/Pro/verschil/rapportage) + intents
 function buildData() {
   const faqs = {
-    1: { label: "Wat is VANA Chat?", cat: "Algemeen",  a: "VANA Chat is een AI-gestuurde chatbot die 24/7 klantvragen beantwoordt via je website of WhatsApp. Getraind op jouw FAQ’s en info." },
-    2: { label: "Voor wie geschikt?", cat: "Algemeen",  a: "Geschikt voor mkb: restaurants, praktijken, salons, webshops, advies en andere dienstverleners met veel herhaalvragen." },
-    3: { label: "Prijzen", cat: "Prijzen",  a: "Starter: €500 set‑up + €100/maand onderhoud. Inclusief training, integratie en maandelijkse monitoring. Uitbreidingen mogelijk." },
-    4: { label: "Hoe snel live?", cat: "Algemeen",  a: "Doorgaans binnen ~1 week live na intake → bouw & branding → integratie → test → livegang." },
-    5: { label: "Set‑up", cat: "Integraties",  a: "Set‑up: we verzamelen FAQ’s, openingstijden, diensten en prijzen; bouwen de bot; stemmen tone‑of‑voice af; en integreren technisch." },
-    6: { label: "Onderhoud", cat: "Prijzen",  a: "Onderhoud: prestatiecheck, updates (tijden/prijzen), en kleine uitbreidingen." },
-    7: { label: "Reserveringen/afspraken?", cat: "Integraties",  a: "Ja, via doorverwijzing naar je boekingssysteem of automatisch via Zapier/Make in je agenda." },
-    8: { label: "WhatsApp/Messenger?", cat: "Integraties",  a: "Ja, naast je website koppelen we met WhatsApp Business en Facebook Messenger." },
-    9: { label: "Meertalig?", cat: "Algemeen",  a: "Standaard NL; Engels/meertalig is mogelijk voor internationale klanten." },
-    10:{ label: "Veiligheid (AVG)", cat: "Veiligheid",  a: "We werken AVG/GDPR‑conform. Data wordt niet gebruikt om externe AI‑modellen te trainen." },
-    11:{ label: "Wat als de bot het niet weet?", cat: "Algemeen",  a: "Als de bot het niet weet, e‑mail/CRM melding voor opvolging of doorverwijzing naar formulier/telefoon." },
-    12:{ label: "Capaciteit", cat: "Algemeen",  a: "Schaalt van 10 tot 10.000+ gesprekken per maand; verwerking parallel." },
-    13:{ label: "Uitbreiden", cat: "Algemeen",  a: "Zeker. Voeg later flows, integraties of kanalen toe (WhatsApp, Messenger, SMS)." },
-    14:{ label: "Samenwerking", cat: "Algemeen",  a: "Samenwerking: Intake → Bouw & branding → Integratie → Test & live (±1 week). Daarna maandelijkse updates & monitoring." }
+    1:  { label: "Wat is VANA Chat?", cat: "Algemeen",     a: "VANA Chat is een AI-gestuurde chatbot die 24/7 klantvragen beantwoordt via je website of WhatsApp. Getraind op jouw FAQ’s en info." },
+    2:  { label: "Voor wie geschikt?", cat: "Algemeen",     a: "Geschikt voor mkb: restaurants, praktijken, salons, webshops, advies en andere dienstverleners met veel herhaalvragen." },
+    3:  { label: "Prijzen",            cat: "Prijzen",       a: "Starter: €500 set‑up + €100/maand onderhoud. Inclusief training, integratie en maandelijkse monitoring. Uitbreidingen mogelijk." },
+    4:  { label: "Hoe snel live?",     cat: "Algemeen",     a: "Doorgaans binnen ~1 week live na intake → bouw & branding → integratie → test → livegang." },
+    5:  { label: "Set‑up",             cat: "Integraties",  a: "Set‑up: we verzamelen FAQ’s, openingstijden, diensten en prijzen; bouwen de bot; stemmen tone‑of‑voice af; en integreren technisch." },
+    6:  { label: "Onderhoud",          cat: "Prijzen",       a: "Onderhoud: prestatiecheck, updates (tijden/prijzen), en kleine uitbreidingen." },
+    7:  { label: "Reserveringen/afspraken?", cat: "Integraties", a: "Ja, via doorverwijzing naar je boekingssysteem of automatisch via Zapier/Make in je agenda." },
+    8:  { label: "WhatsApp/Messenger?", cat: "Integraties", a: "Ja, naast je website koppelen we met WhatsApp Business en Facebook Messenger." },
+    9:  { label: "Meertalig?",         cat: "Algemeen",     a: "Standaard NL; Engels/meertalig is mogelijk voor internationale klanten." },
+    10: { label: "Veiligheid (AVG)",   cat: "Veiligheid",   a: "We werken AVG/GDPR‑conform. Data wordt niet gebruikt om externe AI‑modellen te trainen." },
+    11: { label: "Wat als de bot het niet weet?", cat: "Algemeen", a: "Als de bot het niet weet, e‑mail/CRM melding voor opvolging of doorverwijzing naar formulier/telefoon." },
+    12: { label: "Capaciteit",         cat: "Algemeen",     a: "Schaalt van 10 tot 10.000+ gesprekken per maand; verwerking parallel." },
+    13: { label: "Uitbreiden",         cat: "Algemeen",     a: "Zeker. Voeg later flows, integraties of kanalen toe (WhatsApp, Messenger, SMS)." },
+    14: { label: "Samenwerking",       cat: "Algemeen",     a: "Samenwerking: Intake → Bouw & branding → Integratie → Test & live (±1 week). Daarna maandelijkse updates & monitoring." },
+    // New — Pakketten
+    15: { label: "Starter‑pakket — wat zit erin?", cat: "Pakketten", a: "Starter‑pakket: €500 eenmalige set‑up + €100/m onderhoud. Inclusief maatwerk training op jouw FAQ’s, integratie op website of WhatsApp, maandelijkse monitoring en updates, en een kort rapport." },
+    16: { label: "Pro‑pakket — wat zit erin?",      cat: "Pakketten", a: "Pro‑pakket: €900 set‑up + €180/m. Inclusief website én WhatsApp integratie, agenda/CRM‑koppeling, prioritaire support, en uitgebreid maandelijks rapport. Ideaal als je afspraken/CRM wilt automatiseren." },
+    17: { label: "Verschil Starter vs. Pro",        cat: "Pakketten", a: "Verschillen: Pro heeft extra kanalen (website + WhatsApp), koppeling met agenda/CRM en prioritaire support + uitgebreider rapport. Starter is voordeliger en dekt basis: één kanaal + updates/monitoring." },
+    18: { label: "Wat zit er in rapportage/updates?",cat: "Pakketten", a: "Maandelijkse onderhoud/rapportage: prestatie‑check (veelgestelde vragen, confusies, conversies), doorvoeren van wijzigingen (tijden/prijzen/content), kleine uitbreidingen, en een (uitgebreid bij Pro) rapport per maand." }
   };
-  const cats = ["Alle", "Algemeen", "Prijzen", "Integraties", "Veiligheid"];
+  const cats = ["Alle", "Algemeen", "Prijzen", "Integraties", "Veiligheid", "Pakketten"];
   return { faqs, cats };
 }
 
@@ -46,6 +51,7 @@ export default function handler(req, res) {
     if (/^prijs|prijzen|kosten|tarief|tarieven|abonnement/.test(t)) return "Prijzen";
     if (/^integratie|integraties|koppelingen?|whatsapp|messenger|zapier|make/.test(t)) return "Integraties";
     if (/^veilig|avg|gdpr|privacy/.test(t)) return "Veiligheid";
+    if (/^pakket|pakketten|starter|pro/.test(t)) return "Pakketten";
     return null;
   };
 
@@ -58,13 +64,13 @@ export default function handler(req, res) {
     ], { categories: cats, category: "Alle" });
   }
 
-  // Typed category (bv. 'prijzen') → show prompt + buttons
+  // Typed category (bv. 'prijzen' of 'pakketten') → show prompt + buttons
   const typedCat = catByText(text);
   if (typedCat) {
     return reply("Kies uit een van onderstaande mogelijkheden:", filterButtons(faqs, { category: typedCat }), { categories: cats, category: typedCat });
   }
 
-  // Tabs (explicit) — still no bubble
+  // Tabs (explicit) — no bubble
   if (text.startsWith("tab:")) {
     const category = raw.split(":")[1] || "Alle";
     return reply("", filterButtons(faqs, { category }), { categories: cats, category });
@@ -95,7 +101,13 @@ export default function handler(req, res) {
     }
   }
 
-  // Keyword fallbacks to specific answers (kept for direct Q → A flows)
+  // Keyword fallbacks → map to package answers when user types 'starter' / 'pro' / 'verschil' / 'rapport'
+  if (/starter/.test(text)) return reply(faqs[15].a, [{label:"← FAQ", value:"faq"}, {label:"Plan demo", value:"demo"}], {questionLabel: faqs[15].label});
+  if (/\bpro\b/.test(text) || /pro\-pakket|propakket/.test(text)) return reply(faqs[16].a, [{label:"← FAQ", value:"faq"}], {questionLabel: faqs[16].label});
+  if (/verschil/.test(text)) return reply(faqs[17].a, [{label:"← FAQ", value:"faq"}], {questionLabel: faqs[17].label});
+  if (/rapport|rapportage|update|updates/.test(text)) return reply(faqs[18].a, [{label:"← FAQ", value:"faq"}], {questionLabel: faqs[18].label});
+
+  // Existing broader fallbacks
   if (/prijs|prijzen|kosten|tarief|tarieven|abonnement/.test(text))
     return reply(faqs[3].a, [{label:"← FAQ", value:"faq"}, {label:"Plan demo", value:"demo"}], {questionLabel: faqs[3].label});
 
