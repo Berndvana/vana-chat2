@@ -15,7 +15,8 @@ async function ask(text){
   add(text, 'user');
   try{
     const r = await fetch('/api/chat', {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ text })
     });
     const data = await r.json();
@@ -29,10 +30,7 @@ send.onclick = () => { const t = input.value.trim(); if(t){ ask(t); input.value=
 input.addEventListener('keydown', e => { if(e.key==='Enter'){ send.click(); } });
 
 quick.addEventListener('click', (e)=>{
-  if(e.target.classList.contains('chip')){
-    ask(e.target.textContent);
-  }
+  if(e.target.classList.contains('chip')) ask(e.target.textContent);
 });
 
-// greeting
 add('👋 Welkom bij VANA Chat! Vraag gerust naar prijzen, integraties of plan direct een demo.');
