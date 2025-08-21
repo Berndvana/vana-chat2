@@ -1,4 +1,4 @@
-// api/chat.js — v11: categories + Q&A hardcoded (no external files)
+// api/chat.js — v14: hardcoded categories + exact root welcome
 const DATA = [
   {
     "name": "Product & werking",
@@ -250,7 +250,6 @@ const catNames = () => DATA.map(c => c.name);
 const getCat = (name) => DATA.find(c => c.name === name) || DATA[0];
 
 function categoryOptions() {
-  // expose categories also as options so UIs that rely on options (chips) can render them
   return catNames().map(n => ({ label: n, value: `cat:${n}` }));
 }
 
@@ -260,7 +259,7 @@ function questionOptions(cat) {
   return opts;
 }
 
-module.exports = async function handler(req, res) {
+module.exports = function handler(req, res) {
   try {
     const method = req.method || "GET";
     const body = method === "POST" ? (typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {})) : (req.query || {});
@@ -269,16 +268,27 @@ module.exports = async function handler(req, res) {
 
     const categories = catNames();
 
-    // Root: show categories as chips (options) + meta.categories for UIs that read meta
-    if (!value || value === "faq" || /^(faq|start|menu|help)$/.test(text)) {
+    // Root: show classic welcome + simple buttons (exactly like older UI expected)
+    if (!value || value === "start") {
       return res.status(200).json(reply(
-        "Kies een categorie of typ ‘FAQ’.",
+        "Welkom bij VANA Chat! Kies een optie of typ ‘FAQ’.",
+        [
+          { label: "FAQ", value: "faq" },
+          { label: "Plan een demo", value: "demo" }
+        ],
+        { categories, category: "Alle (bevat alle vragen)" }
+      ));
+    }
+
+    if (value === "faq" || /^(faq|menu|help)$/.test(text)) {
+      // Show categories as options
+      return res.status(200).json(reply(
+        "Kies een categorie:",
         categoryOptions(),
         { categories, category: "Alle (bevat alle vragen)" }
       ));
     }
 
-    // Category flow
     if (value.startsWith("cat:")) {
       const catName = value.slice(4);
       const cat = getCat(catName);
@@ -289,7 +299,6 @@ module.exports = async function handler(req, res) {
       ));
     }
 
-    // Question flow
     if (value.startsWith("q:")) {
       const [, catName, idxStr] = value.split(":");
       const idx = parseInt(idxStr, 10) || 0;
@@ -302,10 +311,13 @@ module.exports = async function handler(req, res) {
       ));
     }
 
-    // Fallback → show categories
+    // Fallback → show welcome again (safe default)
     return res.status(200).json(reply(
-      "Ik snap je vraag niet helemaal. Kies een categorie:",
-      categoryOptions(),
+      "Welkom bij VANA Chat! Kies een optie of typ ‘FAQ’.",
+      [
+        { label: "FAQ", value: "faq" },
+        { label: "Plan een demo", value: "demo" }
+      ],
       { categories, category: "Alle (bevat alle vragen)" }
     ));
   } catch (err) {
