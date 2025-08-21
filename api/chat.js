@@ -1,4 +1,5 @@
-// api/chat.js — v15: always show categories on root & on 'faq'
+// api/chat.js — v16: compatibility mode (multiple keys: text/message, options/choices/chips)
+// Returns redundant keys so different UIs can read it without code changes.
 const DATA = [
   {
     "name": "Product & werking",
@@ -243,22 +244,24 @@ const DATA = [
   }
 ];
 
-function reply(message, options = [], meta = {}) {
-  return { message, options, meta };
+function makePayload(text, options = [], meta = {}) {
+  return {
+    // primary
+    text,
+    options,
+    meta,
+    // redundant keys for compatibility
+    message: text,
+    choices: options,
+    chips: options,
+    data: meta
+  };
 }
+
 const catNames = () => DATA.map(c => c.name);
 const getCat = (name) => DATA.find(c => c.name === name) || DATA[0];
-
-function categoryOptions() {
-  // As chips
-  return catNames().map(n => ({ label: n, value: `cat:${n}` }));
-}
-
-function questionOptions(cat) {
-  const opts = [{ label: "← Terug naar FAQ", value: "faq" }];
-  cat.items.forEach((item, i) => opts.push({ label: item.q, value: `q:${cat.name}:${i}` }));
-  return opts;
-}
+const catOpts = () => catNames().map(n => ({ label: n, value: `cat:${n}` }));
+const qOpts = (cat) => [{ label: "← Terug naar FAQ", value: "faq" }, ...cat.items.map((it,i)=>({ label: it.q, value: `q:${cat.name}:${i}` }))];
 
 module.exports = function handler(req, res) {
   try {
@@ -268,31 +271,18 @@ module.exports = function handler(req, res) {
     const value = (body.value || "").toString();
     const categories = catNames();
 
-    // ROOT → Always show categories as options right away
+    // Root → show category chips immediately
     if (!value) {
-      return res.status(200).json(reply(
-        "Kies een categorie of typ ‘FAQ’.",
-        categoryOptions(),
-        { categories, category: "Alle (bevat alle vragen)" }
-      ));
+      return res.status(200).json(makePayload("Kies een categorie of typ ‘FAQ’.", catOpts(), { categories, category: "Alle (bevat alle vragen)" }));
     }
 
     if (value === "faq" || /^(faq|menu|help)$/.test(text)) {
-      return res.status(200).json(reply(
-        "Kies een categorie:",
-        categoryOptions(),
-        { categories, category: "Alle (bevat alle vragen)" }
-      ));
+      return res.status(200).json(makePayload("Kies een categorie:", catOpts(), { categories, category: "Alle (bevat alle vragen)" }));
     }
 
     if (value.startsWith("cat:")) {
-      const catName = value.slice(4);
-      const cat = getCat(catName);
-      return res.status(200).json(reply(
-        "Kies een vraag:",
-        questionOptions(cat),
-        { categories, category: cat.name }
-      ));
+      const cat = getCat(value.slice(4));
+      return res.status(200).json(makePayload("Kies een vraag:", qOpts(cat), { categories, category: cat.name }));
     }
 
     if (value.startsWith("q:")) {
@@ -300,23 +290,13 @@ module.exports = function handler(req, res) {
       const idx = parseInt(idxStr, 10) || 0;
       const cat = getCat(catName);
       const item = cat.items[idx] || cat.items[0];
-      return res.status(200).json(reply(
-        item.a,
-        [{ label: "← Terug naar FAQ", value: "faq" }],
-        { categories, category: cat.name, questionLabel: item.q }
-      ));
+      return res.status(200).json(makePayload(item.a, [{ label: "← Terug naar FAQ", value: "faq" }], { categories, category: cat.name, questionLabel: item.q }));
     }
 
-    // Fallback → present categories
-    return res.status(200).json(reply(
-      "Kies een categorie of typ ‘FAQ’.",
-      categoryOptions(),
-      { categories, category: "Alle (bevat alle vragen)" }
-    ));
+    // Fallback → categories
+    return res.status(200).json(makePayload("Kies een categorie of typ ‘FAQ’.", catOpts(), { categories, category: "Alle (bevat alle vragen)" }));
   } catch (err) {
     console.error(err);
-    return res.status(200).json(reply("Er ging iets mis. Typ ‘FAQ’ om opnieuw te beginnen.", [
-      { label: "FAQ", value: "faq" }
-    ]));
+    return res.status(200).json(makePayload("Er ging iets mis. Typ ‘FAQ’ om opnieuw te beginnen.", [{ label: "FAQ", value: "faq" }]));
   }
 };
