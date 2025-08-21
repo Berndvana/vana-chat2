@@ -1,5 +1,4 @@
-// api/chat.js — v16: compatibility mode (multiple keys: text/message, options/choices/chips)
-// Returns redundant keys so different UIs can read it without code changes.
+// api/chat.js — patched: categories + Q&A from user spec (compat mode)
 const DATA = [
   {
     "name": "Product & werking",
@@ -244,18 +243,19 @@ const DATA = [
   }
 ];
 
-function makePayload(text, options = [], meta = {}) {
-  return {
-    // primary
+function payload(text, options = [], meta = {}, extra = {}, status = 200) {
+  // multiple keys for UI compatibility
+  const out = {
     text,
-    options,
-    meta,
-    // redundant keys for compatibility
     message: text,
+    options,
     choices: options,
     chips: options,
-    data: meta
+    meta,
+    data: meta,
+    ...extra
   };
+  return out;
 }
 
 const catNames = () => DATA.map(c => c.name);
@@ -266,23 +266,27 @@ const qOpts = (cat) => [{ label: "← Terug naar FAQ", value: "faq" }, ...cat.it
 module.exports = function handler(req, res) {
   try {
     const method = req.method || "GET";
-    const body = method === "POST" ? (typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {})) : (req.query || {});
+    const body = method === "POST"
+      ? (typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {}))
+      : (req.query || {});
+
     const text = (body.text || "").toString().trim().toLowerCase();
     const value = (body.value || "").toString();
+
     const categories = catNames();
 
-    // Root → show category chips immediately
+    // Root: show categories immediately
     if (!value) {
-      return res.status(200).json(makePayload("Kies een categorie of typ ‘FAQ’.", catOpts(), { categories, category: "Alle (bevat alle vragen)" }));
+      return res.status(200).json(payload("Kies een categorie of typ ‘FAQ’.", catOpts(), { categories, category: "Alle (bevat alle vragen)" }));
     }
 
     if (value === "faq" || /^(faq|menu|help)$/.test(text)) {
-      return res.status(200).json(makePayload("Kies een categorie:", catOpts(), { categories, category: "Alle (bevat alle vragen)" }));
+      return res.status(200).json(payload("Kies een categorie:", catOpts(), { categories, category: "Alle (bevat alle vragen)" }));
     }
 
     if (value.startsWith("cat:")) {
       const cat = getCat(value.slice(4));
-      return res.status(200).json(makePayload("Kies een vraag:", qOpts(cat), { categories, category: cat.name }));
+      return res.status(200).json(payload("Kies een vraag:", qOpts(cat), { categories, category: cat.name }));
     }
 
     if (value.startsWith("q:")) {
@@ -290,13 +294,13 @@ module.exports = function handler(req, res) {
       const idx = parseInt(idxStr, 10) || 0;
       const cat = getCat(catName);
       const item = cat.items[idx] || cat.items[0];
-      return res.status(200).json(makePayload(item.a, [{ label: "← Terug naar FAQ", value: "faq" }], { categories, category: cat.name, questionLabel: item.q }));
+      return res.status(200).json(payload(item.a, [{ label: "← Terug naar FAQ", value: "faq" }], { categories, category: cat.name, questionLabel: item.q }));
     }
 
-    // Fallback → categories
-    return res.status(200).json(makePayload("Kies een categorie of typ ‘FAQ’.", catOpts(), { categories, category: "Alle (bevat alle vragen)" }));
+    // Fallback → show categories
+    return res.status(200).json(payload("Kies een categorie of typ ‘FAQ’.", catOpts(), { categories, category: "Alle (bevat alle vragen)" }));
   } catch (err) {
     console.error(err);
-    return res.status(200).json(makePayload("Er ging iets mis. Typ ‘FAQ’ om opnieuw te beginnen.", [{ label: "FAQ", value: "faq" }]));
+    return res.status(200).json(payload("Er ging iets mis. Typ ‘FAQ’ om opnieuw te beginnen.", [{ label: "FAQ", value: "faq" }]));
   }
 };
