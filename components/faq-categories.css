@@ -1,0 +1,20 @@
+.faq-categories {
+  display: flex;
+  flex-direction: column;
+  margin: 20px;
+}
+
+.faq-category-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 5px 0;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.faq-category-button:hover {
+  background-color: #0056b3;
+}
