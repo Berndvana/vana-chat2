@@ -1,7 +1,4 @@
-// api/chat.js — v10: FAQ categories and Q&A (hardcoded)
-// This endpoint accepts POST { text, value } or GET and returns
-// { message, options: [{label, value}], meta: { categories, category, questionLabel } }
-
+// api/chat.js — v11: categories + Q&A hardcoded (no external files)
 const DATA = [
   {
     "name": "Product & werking",
@@ -249,20 +246,18 @@ const DATA = [
 function reply(message, options = [], meta = {}) {
   return { message, options, meta };
 }
+const catNames = () => DATA.map(c => c.name);
+const getCat = (name) => DATA.find(c => c.name === name) || DATA[0];
 
-function getCategories() {
-  return DATA.map(c => c.name);
+function categoryOptions() {
+  // expose categories also as options so UIs that rely on options (chips) can render them
+  return catNames().map(n => ({ label: n, value: `cat:${n}` }));
 }
 
-function getCategoryByName(name) {
-  return DATA.find(c => c.name === name) || DATA[0];
-}
-
-function buildQuestionOptions(catName) {
-  const cat = getCategoryByName(catName);
+function questionOptions(cat) {
   const opts = [{ label: "← Terug naar FAQ", value: "faq" }];
-  cat.items.forEach((item, idx) => opts.push({ label: item.q, value: `q:${cat.name}:${idx}` }));
-  return { opts, cat };
+  cat.items.forEach((item, i) => opts.push({ label: item.q, value: `q:${cat.name}:${i}` }));
+  return opts;
 }
 
 module.exports = async function handler(req, res) {
@@ -272,40 +267,49 @@ module.exports = async function handler(req, res) {
     const text = (body.text || "").toString().trim().toLowerCase();
     const value = (body.value || "").toString();
 
-    const categories = getCategories();
+    const categories = catNames();
 
-    // Start / FAQ root
+    // Root: show categories as chips (options) + meta.categories for UIs that read meta
     if (!value || value === "faq" || /^(faq|start|menu|help)$/.test(text)) {
-      const catName = "Alle (bevat alle vragen)";
-      const { opts } = buildQuestionOptions(catName);
-      return res.status(200).json(reply("Kies een vraag:", opts, { categories, category: catName }));
+      return res.status(200).json(reply(
+        "Kies een categorie of typ ‘FAQ’.",
+        categoryOptions(),
+        { categories, category: "Alle (bevat alle vragen)" }
+      ));
     }
 
-    // Category chosen
+    // Category flow
     if (value.startsWith("cat:")) {
       const catName = value.slice(4);
-      const { opts } = buildQuestionOptions(catName);
-      return res.status(200).json(reply("Kies een vraag:", opts, { categories, category: catName }));
+      const cat = getCat(catName);
+      return res.status(200).json(reply(
+        "Kies een vraag:",
+        questionOptions(cat),
+        { categories, category: cat.name }
+      ));
     }
 
-    // Question chosen
+    // Question flow
     if (value.startsWith("q:")) {
-      const parts = value.split(":");
-      const catName = parts[1];
-      const idx = parseInt(parts[2], 10) || 0;
-      const cat = getCategoryByName(catName);
+      const [, catName, idxStr] = value.split(":");
+      const idx = parseInt(idxStr, 10) || 0;
+      const cat = getCat(catName);
       const item = cat.items[idx] || cat.items[0];
-      return res.status(200).json(reply(item.a, [
-        { label: "← Terug naar FAQ", value: "faq" }
-      ], { categories, category: catName, questionLabel: item.q }));
+      return res.status(200).json(reply(
+        item.a,
+        [{ label: "← Terug naar FAQ", value: "faq" }],
+        { categories, category: cat.name, questionLabel: item.q }
+      ));
     }
 
-    // Unknown → show root
-    const catName = "Alle (bevat alle vragen)";
-    const { opts } = buildQuestionOptions(catName);
-    return res.status(200).json(reply("Welkom bij VANA Chat! Kies een optie of typ ‘FAQ’.", opts, { categories, category: catName }));
-  } catch (e) {
-    console.error(e);
+    // Fallback → show categories
+    return res.status(200).json(reply(
+      "Ik snap je vraag niet helemaal. Kies een categorie:",
+      categoryOptions(),
+      { categories, category: "Alle (bevat alle vragen)" }
+    ));
+  } catch (err) {
+    console.error(err);
     return res.status(200).json(reply("Er ging iets mis. Typ ‘FAQ’ om opnieuw te beginnen.", [
       { label: "FAQ", value: "faq" }
     ]));
