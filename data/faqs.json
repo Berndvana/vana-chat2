@@ -1,0 +1,256 @@
+{
+  "meta": {
+    "name": "VANA Chat – FAQ",
+    "version": 1,
+    "language": "nl",
+    "updated": "2025-08-21"
+  },
+  "categories": [
+    {
+      "id": "product",
+      "name": "Product & werking",
+      "faqs": [
+        {
+          "id": "product_wat_is_vana",
+          "q": "Wat is VANA Chat?",
+          "a": "VANA Chat is een AI-gestuurde chatbot die jouw klantvragen automatisch beantwoordt via je website of WhatsApp. We trainen ’m op jouw FAQ’s en informatie, zodat hij klinkt als jouw bedrijf."
+        },
+        {
+          "id": "product_hoe_snel_live",
+          "q": "Hoe snel staat mijn chatbot live?",
+          "a": "Binnen 1 week. Jij levert de basisinfo aan; wij regelen de bouw, training en aansluiting. Daarna testen we kort en gaat ’ie online."
+        },
+        {
+          "id": "product_voor_wie",
+          "q": "Voor wie is VANA Chat geschikt?",
+          "a": "Voor iedereen met terugkerende vragen: restaurants, tandartsen, webshops, coaches—eigenlijk elk bedrijf dat sneller wil reageren met minder moeite."
+        },
+        {
+          "id": "product_wat_doet_de_bot",
+          "q": "Wat doet de chatbot precies?",
+          "a": "Hij beantwoordt FAQ’s, verzamelt leads (naam/e-mail/telefoon) en kan reserveringen of afspraken inplannen—helemaal volgens jouw spelregels."
+        },
+        {
+          "id": "product_als_hij_het_niet_weet",
+          "q": "Wat als de bot iets niet weet?",
+          "a": "Geen stress. De bot stuurt de vraag door naar jouw e-mail of telefoon voor een menselijke opvolging. Zo gaat er niets verloren."
+        },
+        {
+          "id": "product_zelf_aanpassen",
+          "q": "Kan ik de chatbot zelf aanpassen?",
+          "a": "Zeker. Je kunt zelf eenvoudig antwoorden bijwerken of uitbreiden. En wil je hulp? Dan denken wij graag mee."
+        },
+        {
+          "id": "product_mobiel",
+          "q": "Werkt dit ook op mobiel?",
+          "a": "Ja! De chat werkt uitstekend op mobiel, tablet en desktop."
+        },
+        {
+          "id": "product_reserveringen",
+          "q": "Kan de bot ook reserveringen of afspraken plannen?",
+          "a": "Ja, we koppelen met je agenda of reserveringssysteem. De bot kan direct inboeken of gegevens doorsturen voor bevestiging."
+        }
+      ]
+    },
+    {
+      "id": "pricing",
+      "name": "Prijzen & abonnement",
+      "faqs": [
+        {
+          "id": "pricing_kosten",
+          "q": "Wat kost VANA Chat?",
+          "a": "Eenmalige setup €500 en €100 per maand voor onderhoud. Zo blijft je bot up-to-date en presteert hij steeds beter."
+        },
+        {
+          "id": "pricing_vastzitten",
+          "q": "Zit ik ergens aan vast?",
+          "a": "Nee. Je kunt maandelijks opzeggen. We houden het graag simpel en flexibel."
+        },
+        {
+          "id": "pricing_stoppen",
+          "q": "Kan ik tussentijds stoppen?",
+          "a": "Ja, je zit nergens aan vast. Opzeggen kan per maand."
+        },
+        {
+          "id": "pricing_setup_inhoud",
+          "q": "Wat zit er in de setup-prijs inbegrepen?",
+          "a": "De volledige bouw van de bot, training op jouw data en integratie op je website of WhatsApp. Klaar om te gaan."
+        },
+        {
+          "id": "pricing_maand_inhoud",
+          "q": "Wat zit er in het maandabonnement inbegrepen?",
+          "a": "Monitoring, updates en verbeteringen, plus support. We optimaliseren doorlopend op basis van echte gesprekken."
+        },
+        {
+          "id": "pricing_extra_kosten",
+          "q": "Komen er nog extra kosten bij?",
+          "a": "Alleen voor speciale koppelingen (bijv. CRM of maatwerk-API’s). We stemmen dit altijd vooraf af."
+        }
+      ]
+    },
+    {
+      "id": "integrations",
+      "name": "Integratie & techniek",
+      "faqs": [
+        {
+          "id": "integrations_whatsapp",
+          "q": "Kan de chatbot ook via WhatsApp werken?",
+          "a": "Ja. We koppelen de bot eenvoudig aan WhatsApp Business, zodat klanten kunnen appen zoals ze gewend zijn."
+        },
+        {
+          "id": "integrations_messenger",
+          "q": "Kan ik de chatbot ook in Facebook Messenger gebruiken?",
+          "a": "Ja, naast WhatsApp is integratie met meerdere platformen mogelijk."
+        },
+        {
+          "id": "integrations_website",
+          "q": "Hoe werkt de integratie op mijn website?",
+          "a": "Met een klein script (of iframe) dat wij voor je plaatsen. Het is snel geregeld en veilig."
+        },
+        {
+          "id": "integrations_technische_kennis",
+          "q": "Heb ik technische kennis nodig?",
+          "a": "Nee, we ontzorgen je volledig. Wil je meekijken of leren? Dan leggen we alles helder uit."
+        },
+        {
+          "id": "integrations_crm",
+          "q": "Werkt de chatbot samen met mijn CRM/e-mail?",
+          "a": "Ja. Via Zapier, Make of rechtstreekse API’s maken we koppelingen met je CRM en e-mail."
+        },
+        {
+          "id": "integrations_veiligheid",
+          "q": "Is mijn data veilig?",
+          "a": "Zeker. We gebruiken betrouwbare, AVG-vriendelijke AI-systemen en behandelen jouw data vertrouwelijk."
+        },
+        {
+          "id": "integrations_talen",
+          "q": "Welke talen ondersteunt de chatbot?",
+          "a": "Standaard Nederlands en Engels. Andere talen kan op aanvraag."
+        }
+      ]
+    },
+    {
+      "id": "human",
+      "name": "Human touch / fun",
+      "faqs": [
+        {
+          "id": "human_robot",
+          "q": "Ben jij een robot?",
+          "a": "Haha, klopt—maar wel een vriendelijke. Ik word niet moe en reageer altijd snel."
+        },
+        {
+          "id": "human_koffie",
+          "q": "Drink jij ook koffie?",
+          "a": "Was het maar zo! Ik draai 24/7 op pure wifi-energie ☕⚡."
+        },
+        {
+          "id": "human_inhuren",
+          "q": "Kan ik jou ook inhuren?",
+          "a": "Dat kan—maar dan wel samen met mijn makers bij VANA Chat 😉."
+        },
+        {
+          "id": "human_humor",
+          "q": "Heb jij humor?",
+          "a": "Een beetje! Als je van flauwe AI-grapjes houdt, zitten we goed."
+        },
+        {
+          "id": "human_niet_weet",
+          "q": "Wat doe je als je iets niet weet?",
+          "a": "Dan vraag ik hulp aan een echte collega-mens. Teamwork!"
+        },
+        {
+          "id": "human_collegas",
+          "q": "Heb jij collega’s?",
+          "a": "Zeker! Een hele familie bots die bedrijven helpen om sneller en vriendelijker te antwoorden."
+        }
+      ]
+    },
+    {
+      "id": "all",
+      "name": "Alle",
+      "faqs": [
+        {
+          "ref": "product_wat_is_vana"
+        },
+        {
+          "ref": "product_hoe_snel_live"
+        },
+        {
+          "ref": "product_voor_wie"
+        },
+        {
+          "ref": "product_wat_doet_de_bot"
+        },
+        {
+          "ref": "product_als_hij_het_niet_weet"
+        },
+        {
+          "ref": "product_zelf_aanpassen"
+        },
+        {
+          "ref": "product_mobiel"
+        },
+        {
+          "ref": "product_reserveringen"
+        },
+        {
+          "ref": "pricing_kosten"
+        },
+        {
+          "ref": "pricing_vastzitten"
+        },
+        {
+          "ref": "pricing_stoppen"
+        },
+        {
+          "ref": "pricing_setup_inhoud"
+        },
+        {
+          "ref": "pricing_maand_inhoud"
+        },
+        {
+          "ref": "pricing_extra_kosten"
+        },
+        {
+          "ref": "integrations_whatsapp"
+        },
+        {
+          "ref": "integrations_messenger"
+        },
+        {
+          "ref": "integrations_website"
+        },
+        {
+          "ref": "integrations_technische_kennis"
+        },
+        {
+          "ref": "integrations_crm"
+        },
+        {
+          "ref": "integrations_veiligheid"
+        },
+        {
+          "ref": "integrations_talen"
+        },
+        {
+          "ref": "human_robot"
+        },
+        {
+          "ref": "human_koffie"
+        },
+        {
+          "ref": "human_inhuren"
+        },
+        {
+          "ref": "human_humor"
+        },
+        {
+          "ref": "human_niet_weet"
+        },
+        {
+          "ref": "human_collegas"
+        }
+      ]
+    }
+  ]
+}

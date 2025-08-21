@@ -1,37 +1,19 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VANA Chat</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=60"/>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="wrap">
-    <div class="widget">
-      <header class="bar">
-        <div class="brand"><span class="b">VANA</span> <span class="p">Chat</span></div>
-        <div class="tag">Professionele AI‑chat • Demo in 1 klik</div>
-      </header>
-
-      <main id="messages" class="messages" aria-live="polite"></main>
-
-      <div class="controls">
-        <div id="tabs" class="tabs tabs-full"></div>
-      </div>
-
-      <div id="quick" class="quick"></div>
-
-      <footer class="composer">
-        <input id="input" placeholder="Typ bijv. ‘FAQ’, ‘demo’…" />
-        <button id="send" class="send">Verstuur</button>
-      </footer>
+  <div class="chat-container">
+    <div id="chat-box" class="chat-box"></div>
+    <div class="chat-input">
+      <input id="user-input" type="text" placeholder="Stel je vraag… (bijv. prijzen, WhatsApp, AVG)" />
+      <button id="send-btn">Verstuur</button>
     </div>
   </div>
-
-  <script src="app.js?v=60"></script>
+  <script src="app.js"></script>
 </body>
 </html>
