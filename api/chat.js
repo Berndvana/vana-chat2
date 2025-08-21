@@ -1,4 +1,4 @@
-// api/chat.js — v14: hardcoded categories + exact root welcome
+// api/chat.js — v15: always show categories on root & on 'faq'
 const DATA = [
   {
     "name": "Product & werking",
@@ -250,6 +250,7 @@ const catNames = () => DATA.map(c => c.name);
 const getCat = (name) => DATA.find(c => c.name === name) || DATA[0];
 
 function categoryOptions() {
+  // As chips
   return catNames().map(n => ({ label: n, value: `cat:${n}` }));
 }
 
@@ -265,23 +266,18 @@ module.exports = function handler(req, res) {
     const body = method === "POST" ? (typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {})) : (req.query || {});
     const text = (body.text || "").toString().trim().toLowerCase();
     const value = (body.value || "").toString();
-
     const categories = catNames();
 
-    // Root: show classic welcome + simple buttons (exactly like older UI expected)
-    if (!value || value === "start") {
+    // ROOT → Always show categories as options right away
+    if (!value) {
       return res.status(200).json(reply(
-        "Welkom bij VANA Chat! Kies een optie of typ ‘FAQ’.",
-        [
-          { label: "FAQ", value: "faq" },
-          { label: "Plan een demo", value: "demo" }
-        ],
+        "Kies een categorie of typ ‘FAQ’.",
+        categoryOptions(),
         { categories, category: "Alle (bevat alle vragen)" }
       ));
     }
 
     if (value === "faq" || /^(faq|menu|help)$/.test(text)) {
-      // Show categories as options
       return res.status(200).json(reply(
         "Kies een categorie:",
         categoryOptions(),
@@ -311,13 +307,10 @@ module.exports = function handler(req, res) {
       ));
     }
 
-    // Fallback → show welcome again (safe default)
+    // Fallback → present categories
     return res.status(200).json(reply(
-      "Welkom bij VANA Chat! Kies een optie of typ ‘FAQ’.",
-      [
-        { label: "FAQ", value: "faq" },
-        { label: "Plan een demo", value: "demo" }
-      ],
+      "Kies een categorie of typ ‘FAQ’.",
+      categoryOptions(),
       { categories, category: "Alle (bevat alle vragen)" }
     ));
   } catch (err) {
